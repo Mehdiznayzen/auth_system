@@ -6,8 +6,8 @@ import {
   Mail,
   User,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
@@ -18,8 +18,8 @@ import axios from "axios";
 const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const [dataForm, setDataForm] = useState({
     name: "",
@@ -27,6 +27,22 @@ const RegisterPage = () => {
     password: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          window.location.href = "/profile";
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    checkToken()
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -38,51 +54,49 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!dataForm.name.trim() || !dataForm.email.trim() || !dataForm.password || !dataForm.confirmPassword) {
-    toast.error("Please fill in all fields.");
-    return;
-  }
-
-  if (dataForm.password !== dataForm.confirmPassword) {
-    toast.error("Passwords do not match.");
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/register`,
-      {
-        name: dataForm.name,
-        email: dataForm.email,
-        password: dataForm.password,
-      }
-    );
-
-    if (response.data.status) {
-      toast.success(response.data.msg);
-
-      setDataForm({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-    } else {
-      toast.error(response.data.msg);
+    if (!dataForm.name.trim() || !dataForm.email.trim() || !dataForm.password || !dataForm.confirmPassword) {
+      toast.error("Please fill in all fields.");
+      return;
     }
-  } catch (error: any) {
-    console.error("Register error:", error);
 
-    toast.error(
-      error.response?.data?.msg || "Something went wrong. Please try again."
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
+    if (dataForm.password !== dataForm.confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/register`,
+        {
+          name: dataForm.name,
+          email: dataForm.email,
+          password: dataForm.password,
+        }
+      );
+
+      if (response.data.status) {
+        toast.success(response.data.msg);
+
+        setDataForm({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        navigate("/login");
+      } else {
+        toast.error(response.data.msg);
+      }
+    } catch (error: any) {
+      console.error("Register error:", error);
+      toast.error(error.response?.data?.msg || "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <AuthLayout>

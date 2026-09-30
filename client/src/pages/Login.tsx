@@ -5,7 +5,7 @@ import {
   Lock,
   Mail,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -18,11 +18,28 @@ import Button from "../components/ui/Button";
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const [dataForm, setDataForm] = useState({
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          window.location.href = "/profile";
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    checkToken()
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -56,6 +73,10 @@ const LoginPage = () => {
           email: "",
           password: "",
         });
+
+        localStorage.setItem("token", response.data.token);
+
+        navigate("/profile");
       } else {
         toast.error(response.data.msg);
       }
