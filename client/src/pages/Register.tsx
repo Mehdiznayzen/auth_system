@@ -8,17 +8,21 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-import Input from "../components/ui/Input";
-import Button from "../components/ui/Button";
-import AuthLayout from "../layouts/AuthLayout";
-import { toast } from "react-toastify";
 import axios from "axios";
+import { toast } from "react-toastify";
+
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { FieldLabel } from "@/components/ui/field";
+
+import AuthLayout from "../layouts/AuthLayout";
 
 const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
+
   const navigate = useNavigate();
 
   const [dataForm, setDataForm] = useState({
@@ -29,22 +33,16 @@ const RegisterPage = () => {
   });
 
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          window.location.href = "/profile";
-          return;
-        }
-      } catch (error) {
-        console.error(error);
-      }
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      navigate("/profile", { replace: true });
     }
+  }, [navigate]);
 
-    checkToken()
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
 
     setDataForm((prev) => ({
@@ -53,10 +51,17 @@ const RegisterPage = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
-    if (!dataForm.name.trim() || !dataForm.email.trim() || !dataForm.password || !dataForm.confirmPassword) {
+    if (
+      !dataForm.name.trim() ||
+      !dataForm.email.trim() ||
+      !dataForm.password ||
+      !dataForm.confirmPassword
+    ) {
       toast.error("Please fill in all fields.");
       return;
     }
@@ -69,7 +74,8 @@ const RegisterPage = () => {
     try {
       setIsLoading(true);
 
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/register`,
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/users/register`,
         {
           name: dataForm.name,
           email: dataForm.email,
@@ -86,13 +92,18 @@ const RegisterPage = () => {
           password: "",
           confirmPassword: "",
         });
+
         navigate("/login");
       } else {
         toast.error(response.data.msg);
       }
     } catch (error: any) {
       console.error("Register error:", error);
-      toast.error(error.response?.data?.msg || "Something went wrong. Please try again.");
+
+      toast.error(
+        error.response?.data?.msg ||
+          "Something went wrong. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -102,6 +113,7 @@ const RegisterPage = () => {
     <AuthLayout>
       <div className="flex flex-col gap-8">
 
+        {/* Header */}
         <div className="mb-2">
           <h1 className="text-center text-2xl font-bold text-white">
             Create an account
@@ -112,46 +124,89 @@ const RegisterPage = () => {
           </p>
         </div>
 
+        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4"
         >
 
-          <Input
-            label="Full name"
-            name="name"
-            type="text"
-            placeholder="John Doe"
-            leftIcon={<User className="h-4 w-4" />}
-            value={dataForm.name}
-            onChange={handleChange}
-            required
-          />
+          {/* Full Name */}
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="name" className="text-stone-50">
+              Full name
+            </FieldLabel>
 
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            leftIcon={<Mail className="h-4 w-4" />}
-            value={dataForm.email}
-            onChange={handleChange}
-            required
-          />
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-          <Input
-            label="Password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Create a password"
-            leftIcon={<Lock className="h-4 w-4" />}
-            rightIcon={
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="John Doe"
+                value={dataForm.name}
+                onChange={handleChange}
+                autoComplete="name"
+                className="pl-10 text-stone-50"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="email" className="text-stone-50">
+              Email
+            </FieldLabel>
+
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                value={dataForm.email}
+                onChange={handleChange}
+                autoComplete="email"
+                className="pl-10 text-stone-50"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="password" className="text-stone-50">
+              Password
+            </FieldLabel>
+
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create a password"
+                value={dataForm.password}
+                onChange={handleChange}
+                autoComplete="new-password"
+                className="pl-10 pr-10 text-stone-50"
+                required
+              />
+
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="cursor-pointer text-slate-300 transition-colors hover:text-white"
+                onClick={() =>
+                  setShowPassword((prev) => !prev)
+                }
+                className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400 transition-colors hover:text-white"
                 aria-label={
-                  showPassword ? "Hide password" : "Show password"
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
                 }
               >
                 {showPassword ? (
@@ -160,25 +215,42 @@ const RegisterPage = () => {
                   <Eye className="h-4 w-4" />
                 )}
               </button>
-            }
-            value={dataForm.password}
-            onChange={handleChange}
-            required
-          />
+            </div>
+          </div>
 
-          <Input
-            label="Confirm password"
-            name="confirmPassword"
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="Confirm your password"
-            leftIcon={<Lock className="h-4 w-4" />}
-            rightIcon={
+          {/* Confirm Password */}
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="confirmPassword" className="text-stone-50">
+              Confirm password
+            </FieldLabel>
+
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={
+                  showConfirmPassword
+                    ? "text"
+                    : "password"
+                }
+                placeholder="Confirm your password"
+                value={dataForm.confirmPassword}
+                onChange={handleChange}
+                autoComplete="new-password"
+                className="pl-10 pr-10 text-stone-50"
+                required
+              />
+
               <button
                 type="button"
                 onClick={() =>
-                  setShowConfirmPassword(!showConfirmPassword)
+                  setShowConfirmPassword(
+                    (prev) => !prev
+                  )
                 }
-                className="cursor-pointer text-slate-300 transition-colors hover:text-white"
+                className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400 transition-colors hover:text-white"
                 aria-label={
                   showConfirmPassword
                     ? "Hide password"
@@ -191,22 +263,27 @@ const RegisterPage = () => {
                   <Eye className="h-4 w-4" />
                 )}
               </button>
-            }
-            value={dataForm.confirmPassword}
-            onChange={handleChange}
-            required
-          />
+            </div>
+          </div>
 
+          {/* Submit */}
           <Button
             type="submit"
-            fullWidth
-            loading={isLoading}
-            leftIcon={<ArrowRight className="h-4 w-4" />}
+            disabled={isLoading}
+            className="mt-2 w-full"
           >
-            {isLoading ? "Creating account..." : "Create account"}
+            {isLoading ? (
+              "Creating account..."
+            ) : (
+              <>
+                Create account
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
         </form>
 
+        {/* Login */}
         <div className="text-center text-sm text-slate-400">
           Already have an account?{" "}
           <Link
@@ -216,6 +293,7 @@ const RegisterPage = () => {
             Login
           </Link>
         </div>
+
       </div>
     </AuthLayout>
   );

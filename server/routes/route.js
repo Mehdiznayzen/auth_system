@@ -1,13 +1,22 @@
 const express = require('express');
-const { handleLogin, handleRegister, handleProfile, handleUpdateUser } = require('../controllers/userController');
+const { 
+    handleLogin, 
+    handleRegister, 
+    handleProfile, 
+    handleUpdateUser, 
+    handleForgotPassword,
+    handleResetPassword
+} = require('../controllers/userController');
 const verifyToken = require('../middleware/auth.middleware');
-const routes = express.Router();
+const router = express.Router();
 
-routes.post("/login", handleLogin);
-routes.post("/register", handleRegister);
-routes.put("/update-user/:id", handleUpdateUser);
-routes.get("/profile", verifyToken, handleProfile);
+router.get("/profile", verifyToken, handleProfile);
+router.post("/login", handleLogin);
+router.post("/register", handleRegister);
+router.post("/forgot-password", handleForgotPassword);
+router.post("/reset-password/:token", handleResetPassword);
+router.put("/update-user/:id", handleUpdateUser);
 
 module.exports = {
-    routes
+    router
 }

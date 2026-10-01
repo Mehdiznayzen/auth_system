@@ -9,15 +9,17 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-
-import Input from "../components/ui/Input";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
+import { FieldLabel } from "@/components/ui/field";
 import AuthLayout from "../layouts/AuthLayout";
 import Checkbox from "../components/ui/Checkbox";
-import Button from "../components/ui/Button";
+import ForgotPasswordModal from "@/components/forgot-password-modal";
 
 const LoginPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
   const navigate = useNavigate();
 
   const [dataForm, setDataForm] = useState({
@@ -26,20 +28,12 @@ const LoginPage = () => {
   });
 
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          window.location.href = "/profile";
-          return;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
+    const token = localStorage.getItem("token");
 
-    checkToken()
-  }, []);
+    if (token) {
+      navigate("/profile", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -50,7 +44,7 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!dataForm.email.trim() || !dataForm.password) {
@@ -60,7 +54,9 @@ const LoginPage = () => {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/login`,
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/users/login`,
         {
           email: dataForm.email,
           password: dataForm.password,
@@ -69,12 +65,13 @@ const LoginPage = () => {
 
       if (response.data.status) {
         toast.success(response.data.msg);
+
+        localStorage.setItem("token", response.data.token);
+
         setDataForm({
           email: "",
           password: "",
         });
-
-        localStorage.setItem("token", response.data.token);
 
         navigate("/profile");
       } else {
@@ -96,7 +93,6 @@ const LoginPage = () => {
     <AuthLayout>
       <div className="flex flex-col gap-8">
 
-        {/* Header */}
         <div className="mb-2">
           <h1 className="text-center text-2xl font-bold text-white">
             Welcome back
@@ -107,38 +103,63 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-5"
         >
 
-          {/* Email */}
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            leftIcon={<Mail className="h-4 w-4" />}
-            value={dataForm.email}
-            onChange={handleChange}
-            required
-          />
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="email" className="text-stone-50">
+              Email
+            </FieldLabel>
 
-          {/* Password */}
-          <Input
-            label="Password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
-            leftIcon={<Lock className="h-4 w-4" />}
-            rightIcon={
+            <div className="relative">
+              <Mail
+                className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400"
+              />
+
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                value={dataForm.email}
+                onChange={handleChange}
+                autoComplete="email"
+                className="pl-10 text-stone-50"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="password" className="text-stone-50">
+              Password
+            </FieldLabel>
+
+            <div className="relative">
+              <Lock
+                className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400"
+              />
+
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={dataForm.password}
+                onChange={handleChange}
+                autoComplete="current-password"
+                className="pl-10 pr-10 text-stone-50"
+                required
+              />
+
               <button
                 type="button"
                 onClick={() =>
                   setShowPassword((prev) => !prev)
                 }
-                className="cursor-pointer text-slate-200 transition-colors hover:text-white"
+                className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400 transition-colors hover:text-white"
                 aria-label={
                   showPassword
                     ? "Hide password"
@@ -151,41 +172,40 @@ const LoginPage = () => {
                   <Eye className="h-4 w-4" />
                 )}
               </button>
-            }
-            value={dataForm.password}
-            onChange={handleChange}
-            required
-          />
+            </div>
+          </div>
 
-          {/* Remember + Forgot password */}
           <div className="flex items-center justify-between">
             <Checkbox
               name="remember"
               label="Remember me"
             />
 
-            <Link
-              to="#"
-              className="text-sm font-medium text-blue-400 transition-colors hover:text-blue-300"
-            >
-              Forgot password?
-            </Link>
+            <ForgotPasswordModal>
+              <p
+                className="text-sm font-medium text-blue-400 transition-colors hover:text-blue-300 cursor-pointer"
+              >
+                Forgot password?
+              </p>
+            </ForgotPasswordModal>
           </div>
 
-          {/* Submit */}
           <Button
             type="submit"
-            fullWidth
-            loading={isLoading}
-            leftIcon={
-              <ArrowRight className="h-4 w-4" />
-            }
+            disabled={isLoading}
+            className="w-full"
           >
-            {isLoading ? "Signing in..." : "Sign In"}
+            {isLoading ? (
+              "Signing in..."
+            ) : (
+              <>
+                Sign In
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
         </form>
 
-        {/* Register */}
         <div className="text-center text-sm text-slate-400">
           Don't have an account?{" "}
           <Link
