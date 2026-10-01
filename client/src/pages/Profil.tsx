@@ -83,9 +83,7 @@ function Profile() {
     }));
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!user.name.trim() || !user.email.trim()) {
@@ -151,6 +149,11 @@ function Profile() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login", { replace: true });
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -178,7 +181,17 @@ function Profile() {
           </p>
         </div>
 
-        {/* Card */}
+        {/* Logout Button */}
+        <div className="flex justify-center">
+          <Button
+            type="button"
+            onClick={handleLogout}
+            className="py-5 px-4 cursor-pointer w-50"
+          >
+            Logout
+          </Button>
+        </div>
+
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-8 shadow-xl w-full">
 
           <form
@@ -186,7 +199,6 @@ function Profile() {
             className="flex flex-col gap-5"
           >
 
-            {/* Full Name */}
             <div className="flex flex-col gap-2">
               <FieldLabel htmlFor="name">
                 Full name
@@ -208,7 +220,6 @@ function Profile() {
               </div>
             </div>
 
-            {/* Email */}
             <div className="flex flex-col gap-2">
               <FieldLabel htmlFor="email">
                 Email
@@ -230,7 +241,6 @@ function Profile() {
               </div>
             </div>
 
-            {/* New Password */}
             <div className="flex flex-col gap-2">
               <FieldLabel htmlFor="password">
                 New Password
@@ -261,11 +271,13 @@ function Profile() {
                       : "Show password"
                   }
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {
+                    showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )
+                  }
                 </button>
               </div>
 
@@ -275,23 +287,24 @@ function Profile() {
               </p>
             </div>
 
-            {/* Save */}
             <Button
               type="submit"
               disabled={saving}
-              className="w-full"
+              className="w-full py-5 cursor-pointer"
             >
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving changes...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save changes
-                </>
-              )}
+              {
+                saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving changes...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save changes
+                  </>
+                )
+              }
             </Button>
 
           </form>
