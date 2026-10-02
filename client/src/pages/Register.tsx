@@ -129,7 +129,6 @@ const RegisterPage = () => {
           onSubmit={handleSubmit}
           className="flex flex-col gap-4"
         >
-
           {/* Full Name */}
           <div className="flex flex-col gap-2">
             <FieldLabel htmlFor="name" className="text-stone-50">
